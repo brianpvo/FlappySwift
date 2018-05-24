@@ -18,6 +18,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var movePipesAndRemove:SKAction!
     var moving:SKNode!
     var pipes:SKNode!
+    var scoreboard: SKSpriteNode!
     var canRestart = Bool()
     var scoreLabelNode:SKLabelNode!
     var score = NSInteger()
@@ -194,12 +195,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         // Remove all existing pipes
         pipes.removeAllChildren()
         
+        // Remove scoreboard
+        scoreboard.isHidden = true
+        
         // Reset _canRestart
         canRestart = false
         
         // Reset score
         score = 0
         scoreLabelNode.text = String(score)
+        scoreLabelNode.position = CGPoint( x: self.frame.midX, y: 3 * self.frame.size.height / 4 )
         
         // Restart animation
         moving.speed = 1
@@ -208,9 +213,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         if moving.speed > 0  {
             for _ in touches { // do we need all touches?
                 bird.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
-                bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 30))
+                bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 20))
             }
         } else if canRestart {
+            // Show scoreboard
             self.resetScene()
         }
     }
@@ -237,6 +243,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 bird.physicsBody?.collisionBitMask = worldCategory
                 bird.run(  SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1), completion:{self.bird.speed = 0 })
                 
+                // Show scoreboard
+                let scoreboardTexture = SKTexture(imageNamed: "scoreboard")
+                scoreboardTexture.filteringMode = .nearest
+                scoreboard = SKSpriteNode(texture: scoreboardTexture)
+                scoreboard.position = CGPoint(x: self.frame.midX, y: 3 * self.frame.size.height / 4)
+                scoreLabelNode.position = CGPoint(x: self.frame.midX + 30, y: (3 * self.frame.size.height / 4) + 35)
+                self.addChild(scoreboard)
+                scoreboard.isHidden = false
                 
                 // Flash background if contact is detected
                 self.removeAction(forKey: "flash")
