@@ -21,7 +21,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var scoreboard: SKSpriteNode!
     var canRestart = Bool()
     var scoreLabelNode:SKLabelNode!
+    var bestScoreLabelNode: SKLabelNode!
     var score = NSInteger()
+    var bestScore = NSInteger()
     
     let birdCategory: UInt32 = 1 << 0
     let worldCategory: UInt32 = 1 << 1
@@ -195,8 +197,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         // Remove all existing pipes
         pipes.removeAllChildren()
         
-        // Remove scoreboard
+        // Hide scoreboard & best score
         scoreboard.isHidden = true
+        bestScoreLabelNode.isHidden = true
         
         // Reset _canRestart
         canRestart = false
@@ -248,9 +251,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 scoreboardTexture.filteringMode = .nearest
                 scoreboard = SKSpriteNode(texture: scoreboardTexture)
                 scoreboard.position = CGPoint(x: self.frame.midX, y: 3 * self.frame.size.height / 4)
-                scoreLabelNode.position = CGPoint(x: self.frame.midX + 30, y: (3 * self.frame.size.height / 4) + 35)
+                scoreLabelNode.position = CGPoint(x: self.frame.midX + 30, y: (3 * self.frame.size.height / 4) + 30)
                 self.addChild(scoreboard)
                 scoreboard.isHidden = false
+                
+                // Initialize and display best score
+                bestScoreLabelNode = SKLabelNode(fontNamed:"MarkerFelt-Wide")
+                bestScoreLabelNode.position = CGPoint(x: self.frame.midX + 30, y: (3 * self.frame.size.height / 4) - 15)
+                bestScoreLabelNode.zPosition = 100
+                if score > bestScore {
+                    bestScore = score
+                }
+                bestScoreLabelNode.text = String(bestScore)
+                self.addChild(bestScoreLabelNode)
+                bestScoreLabelNode.isHidden = false
                 
                 // Flash background if contact is detected
                 self.removeAction(forKey: "flash")
