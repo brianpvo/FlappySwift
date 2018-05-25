@@ -29,7 +29,7 @@ extension SKNode {
     }
 }
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController, ShareProtocol {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,6 +47,17 @@ class GameViewController: UIViewController {
             scene.scaleMode = .aspectFill
             
             skView.presentScene(scene)
+            scene.shareDelegate = self
+        }
+    }
+    
+    func share(screenshot: UIImage?) {
+        if let screenshot = screenshot {
+            let activityVC = UIActivityViewController(activityItems: [screenshot], applicationActivities: nil)
+            if let popoverPresentationController = activityVC.popoverPresentationController {
+                popoverPresentationController.sourceView = self.view
+            }
+            self.present(activityVC, animated: true, completion: nil)
         }
     }
 

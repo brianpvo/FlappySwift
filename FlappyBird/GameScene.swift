@@ -8,6 +8,10 @@
 
 import SpriteKit
 
+protocol ShareProtocol {
+    func share(screenshot: UIImage?)
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate{
     let verticalPipeGap = 150.0
     
@@ -22,8 +26,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     var canRestart = Bool()
     var scoreLabelNode:SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
+    var restartButton: SKSpriteNode!
+    var shareButton: SKSpriteNode!
     var score = NSInteger()
     var bestScore = NSInteger()
+    var shareDelegate: ShareProtocol!
     
     let birdCategory: UInt32 = 1 << 0
     let worldCategory: UInt32 = 1 << 1
@@ -201,6 +208,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         scoreboard.isHidden = true
         bestScoreLabelNode.isHidden = true
         
+        // Hide buttons
+        restartButton.isHidden = true
+        shareButton.isHidden = true
+        
         // Reset _canRestart
         canRestart = false
         
@@ -219,8 +230,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 20))
             }
         } else if canRestart {
-            // Show scoreboard
-            self.resetScene()
+            let touch = touches.first!
+            let positionInScene = touch.location(in: self)
+            let touchedNode = self.atPoint(positionInScene)
+            
+            if let name = touchedNode.name {
+                if name == "restart" {
+                    print("retart touch")
+                    
+                    // Restart game
+                    self.resetScene()
+                }
+                if name == "share" {
+                    print("share")
+                    let snapshotView = self.view?.snapshotView(afterScreenUpdates: true)
+                    let bounds = UIScreen.main.bounds
+                    UIGraphicsBeginImageContextWithOptions(bounds.size, false, 0)
+                    snapshotView?.drawHierarchy(in: bounds, afterScreenUpdates: true)
+                    let screenshotImage = UIGraphicsGetImageFromCurrentImageContext()
+                    UIGraphicsEndImageContext()
+                    self.shareDelegate.share(screenshot: screenshotImage)
+                }
+            }
         }
     }
     
@@ -255,6 +286,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 self.addChild(scoreboard)
                 scoreboard.isHidden = false
                 
+                // Create restart and share buttons
+                restartButton = SKSpriteNode(imageNamed: "restart")
+                restartButton.position = CGPoint(x: self.frame.midX - 75, y: self.frame.midY + 100)
+                restartButton.size = CGSize(width: restartButton.size.width / 2, height: restartButton.size.height / 2)
+                restartButton.name = "restart"
+                restartButton.isUserInteractionEnabled = false
+                self.addChild(restartButton)
+                restartButton.isHidden = false
+                
+                shareButton = SKSpriteNode(imageNamed: "share")
+                shareButton.position = CGPoint(x: self.frame.midX + 75, y: self.frame.midY + 100)
+                shareButton.size = CGSize(width: shareButton.size.width - 22, height: shareButton.size.height - 11)
+                shareButton.name = "share"
+                shareButton.isUserInteractionEnabled = false
+                self.addChild(shareButton)
+                shareButton.isHidden = false
+                
+                
                 // Initialize and display best score
                 bestScoreLabelNode = SKLabelNode(fontNamed:"MarkerFelt-Wide")
                 bestScoreLabelNode.position = CGPoint(x: self.frame.midX + 30, y: (3 * self.frame.size.height / 4) - 15)
@@ -265,6 +314,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
                 bestScoreLabelNode.text = String(bestScore)
                 self.addChild(bestScoreLabelNode)
                 bestScoreLabelNode.isHidden = false
+                
+                
                 
                 // Flash background if contact is detected
                 self.removeAction(forKey: "flash")

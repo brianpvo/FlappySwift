@@ -32,5 +32,7 @@
 	</array>
 	<key>UIStatusBarHidden</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save Flappy Bird screenshot</string>
 </dict>
 </plist>
